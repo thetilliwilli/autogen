@@ -7,6 +7,7 @@ class Metagen {
     originalMetagen = null;
     files = [];
     result = "";
+    target = null;
 
     from({ source, recursive, filter }) {
 
@@ -30,18 +31,25 @@ class Metagen {
     }
 
     to(target) {
-        const out = path.isAbsolute(target) ? target : path.resolve(this.metagenFileDir, target);
-        fs.mkdirSync(path.dirname(out), { recursive: true });
-        fs.writeFileSync(out, this.result, "utf8");
+        this.target = path.isAbsolute(target) ? target : path.resolve(this.metagenFileDir, target);
         return this;
     }
 
     toSelf() {
-        this.result = `${this.originalMetagen}\n${this.result}`;
-        this.to(this.metagenFile);
+        this.target = this.metagenFile;
+        return this;
     }
 
     get __metagend__() {
+        const isSelf = this.target === null || this.target === this.metagenFile;
+
+        const finalResult = isSelf
+            ? `${this.originalMetagen}\n${this.result}`
+            : this.result;
+
+        fs.mkdirSync(path.dirname(this.target), { recursive: true });
+        fs.writeFileSync(this.target, finalResult, "utf8");
+
         process.exit(0);
     }
 
@@ -55,7 +63,7 @@ class Metagen {
             process.exit(1);
         }
 
-        this.originalMetagen = metagenFileLines.slice(firstLineIndex, lastLineIndex + 1).join("\n");
+        this.originalMetagen = metagenFileLines.slice(0, lastLineIndex + 1).join("\n");
     }
 
     #collectFiles(sourceAbsolutePath, recursive) {
