@@ -3,12 +3,13 @@
   "version": "0.0.1",
   "description": "",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "metagen.js",
   "bin": {
-    "metagen": "./index.js"
+    "metagen": "./bin/metagen.js"
   },
   "files": [
-    "index.js"
+    "bin",
+    "metagen.js"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
