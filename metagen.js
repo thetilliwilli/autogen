@@ -2,13 +2,17 @@ const fs = require("fs");
 const path = require("path");
 
 class Metagen {
-    requireMainFilename = require.main.filename;
-    callerDir = path.dirname(this.requireMainFilename);
+    metagenFile = require.main.filename;
+    metagenFileDir = path.dirname(this.metagenFile);
+    originalMetagen = null;
     files = [];
     result = "";
 
     from({ source, recursive, filter }) {
-        const sourceAbsolutePath = path.isAbsolute(source) ? source : path.resolve(this.callerDir, source);
+
+        this.#saveOriginalMetagen();
+
+        const sourceAbsolutePath = path.isAbsolute(source) ? source : path.resolve(this.metagenFileDir, source);
 
         const files = this.#collectFiles(sourceAbsolutePath, recursive)
             .map(filePath => this.#toFile(filePath));
@@ -26,18 +30,32 @@ class Metagen {
     }
 
     to(target) {
-        const out = path.isAbsolute(target) ? target : path.resolve(this.callerDir, target);
+        const out = path.isAbsolute(target) ? target : path.resolve(this.metagenFileDir, target);
         fs.mkdirSync(path.dirname(out), { recursive: true });
         fs.writeFileSync(out, this.result, "utf8");
         return this;
     }
 
     toSelf() {
-        this.to(this.requireMainFilename);
+        this.result = `${this.originalMetagen}\n${this.result}`;
+        this.to(this.metagenFile);
     }
 
     get __metagend__() {
         process.exit(0);
+    }
+
+    #saveOriginalMetagen() {
+        const metagenFileLines = fs.readFileSync(this.metagenFile, "utf8").split("\n");
+        const firstLineIndex = metagenFileLines.findIndex(line => line.includes(`require("metagen")`) || line.includes(`require('metagen')`) || line.includes("require(`metagen`)"));
+        const lastLineIndex = metagenFileLines.findIndex(line => line.includes(`__metagend__`));
+
+        if (firstLineIndex === -1 || lastLineIndex === -1) {
+            console.error('no metagen code found. exit 1');
+            process.exit(1);
+        }
+
+        this.originalMetagen = metagenFileLines.slice(firstLineIndex, lastLineIndex + 1).join("\n");
     }
 
     #collectFiles(sourceAbsolutePath, recursive) {
