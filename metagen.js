@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
 
@@ -18,7 +19,7 @@ function collectFiles(absFrom, recursive) {
 function toFile(absPath, fromBase) {
     return {
         filename: path.basename(absPath),
-        fileExtension: path.extname(absPath),
+        ext: path.extname(absPath),
         content: fs.readFileSync(absPath, 'utf8'),
         path: absPath,
         dir: path.dirname(absPath),
@@ -26,7 +27,7 @@ function toFile(absPath, fromBase) {
     };
 }
 
-function __autogen__({ from, recursive = false, filter } = {}) {
+function metagen({ from, recursive = false, filter } = {}) {
     const callerDir = path.dirname(require.main.filename);
     const absFrom = path.isAbsolute(from) ? from : path.resolve(callerDir, from);
     const base = fs.statSync(absFrom).isDirectory() ? absFrom : path.dirname(absFrom);
@@ -47,4 +48,21 @@ function __autogen__({ from, recursive = false, filter } = {}) {
     };
 }
 
-__autogen__();
+// __autogen__();
+
+
+module.exports = metagen;
+
+if (require.main === module) {
+    const [, , target, ...rest] = process.argv;
+    if (!target) {
+        console.error('usage: metagen <file-or-dir> [--recursive]');
+        process.exit(1);
+    }
+    const recursive = rest.includes('-r') || rest.includes('--recursive');
+    const abs = path.resolve(process.cwd(), target);
+    metagen({ from: abs, recursive }).extract((files) => {
+        for (const f of files) console.log(f.relPath);
+        return '';
+    });
+}
