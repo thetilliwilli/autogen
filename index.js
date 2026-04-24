@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 
 class Metagen {
-    metagenFile = require.main.filename;
+    // metagenFile = require.main.filename;
+    metagenFile = globalThis.metagenFile;
     metagenFileDir = path.dirname(this.metagenFile);
     originalMetagen = null;
     files = [];
@@ -54,16 +55,17 @@ class Metagen {
     }
 
     #saveOriginalMetagen() {
-        const metagenFileLines = fs.readFileSync(this.metagenFile, "utf8").split("\n");
-        const firstLineIndex = metagenFileLines.findIndex(line => line.includes(`require("metagen")`) || line.includes(`require('metagen')`) || line.includes("require(`metagen`)"));
-        const lastLineIndex = metagenFileLines.findIndex(line => line.includes(`__metagend__`));
+        // const metagenFileLines = fs.readFileSync(this.metagenFile, "utf8").split("\n");
+        // const firstLineIndex = metagenFileLines.findIndex(line => line.includes(`require("metagen")`) || line.includes(`require('metagen')`) || line.includes("require(`metagen`)"));
+        // const lastLineIndex = metagenFileLines.findIndex(line => line.includes(`__metagend__`));
 
-        if (firstLineIndex === -1 || lastLineIndex === -1) {
-            console.error('no metagen code found. exit 1');
-            process.exit(1);
-        }
+        // if (firstLineIndex === -1 || lastLineIndex === -1) {
+        //     console.error('no metagen code found. exit 1');
+        //     process.exit(1);
+        // }
 
-        this.originalMetagen = metagenFileLines.slice(0, lastLineIndex + 1).join("\n");
+        // this.originalMetagen = metagenFileLines.slice(0, lastLineIndex + 1).join("\n");
+        this.originalMetagen = globalThis.originalMetagenCode;
     }
 
     #collectFiles(sourceAbsolutePath, recursive) {
