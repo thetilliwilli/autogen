@@ -42,14 +42,15 @@ class Metagen {
     }
 
     get __metagend__() {
-        const isSelf = this.target === null || this.target === this.metagenFile;
+        const finalTarget = this.target !== null ? this.target : this.metagenFile;
+        const isSelf = finalTarget === this.metagenFile;
 
         const finalResult = isSelf
             ? `${this.originalMetagen}\n${this.result}`
             : this.result;
 
-        fs.mkdirSync(path.dirname(this.target), { recursive: true });
-        fs.writeFileSync(this.target, finalResult, "utf8");
+        fs.mkdirSync(path.dirname(finalTarget), { recursive: true });
+        fs.writeFileSync(finalTarget, finalResult, "utf8");
 
         process.exit(0);
     }
