@@ -1,0 +1,16 @@
+write js function that using regex extract from multiline string like this:
+```
+type CarListRequest = {
+    id: number;
+    name: string;
+}
+```
+
+json like this:
+```
+{
+type:"CarListRequest",
+body: "id: number;
+    name: string;"
+}
+```

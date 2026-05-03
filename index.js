@@ -20,14 +20,23 @@ class Metagen {
             .map(filePath => this.#toFile(filePath));
 
         if (filter) files = files.filter(filter);
-
         this.files = files;
 
         return this;
     }
 
+    with(changeContext) {
+        Object.assign(this, changeContext(this));
+        return this;
+    }
+
     make(callback) {
-        this.result = callback(this.files);
+        this.result = callback(this);
+        return this;
+    }
+
+    maket(strs, ...args) {
+        this.result = strs.map((str, i) => str + args[i]?.(this)).join("");
         return this;
     }
 

@@ -1,0 +1,3 @@
+type CarDeleteRequest = {
+    id: string;
+}
